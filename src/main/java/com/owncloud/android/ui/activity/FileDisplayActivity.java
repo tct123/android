@@ -1430,7 +1430,9 @@ public class FileDisplayActivity extends FileActivity
     private void setBackgroundText() {
         final OCFileListFragment ocFileListFragment = getListOfFilesFragment();
         if (ocFileListFragment != null) {
-            if (mSyncInProgress) {
+            if (mSyncInProgress ||
+                getFile().getFileLength() > 0 && getStorageManager().getFolderContent(getFile(),
+                                                                                      false).size() == 0) {
                 ocFileListFragment.setEmptyListLoadingMessage();
             } else {
                 ocFileListFragment.setEmptyListMessage(ExtendedListFragment.SearchType.NO_SEARCH);

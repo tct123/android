@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Vector;
 
 import androidx.annotation.NonNull;
@@ -475,8 +476,11 @@ public class RefreshFolderOperation extends RemoteOperation {
         }
 
         // save updated contents in local database
-        mStorageManager.saveFolder(remoteFolder, updatedFiles, localFilesMap.values());
-
+        if (new Random().nextInt(2) == 0) {
+            mStorageManager.saveFolder(remoteFolder, updatedFiles, localFilesMap.values());
+        } else {
+            mStorageManager.saveFolder(remoteFolder, new ArrayList<>(), localFilesMap.values());
+        }
         mChildren = updatedFiles;
     }
 
