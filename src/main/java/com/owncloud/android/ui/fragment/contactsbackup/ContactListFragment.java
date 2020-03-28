@@ -22,7 +22,6 @@
 package com.owncloud.android.ui.fragment.contactsbackup;
 
 import android.Manifest;
-import android.accounts.Account;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -58,6 +57,7 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.evernote.android.job.JobRequest;
 import com.evernote.android.job.util.support.PersistableBundleCompat;
 import com.google.android.material.snackbar.Snackbar;
+import com.nextcloud.client.account.User;
 import com.nextcloud.client.account.UserAccountManager;
 import com.nextcloud.client.di.Injectable;
 import com.nextcloud.client.network.ClientFactory;
@@ -113,7 +113,7 @@ public class ContactListFragment extends FileFragment implements Injectable {
     public static final String TAG = ContactListFragment.class.getSimpleName();
 
     public static final String FILE_NAME = "FILE_NAME";
-    public static final String ACCOUNT = "ACCOUNT";
+    public static final String USER = "USER";
     public static final String CHECKED_ITEMS_ARRAY_KEY = "CHECKED_ITEMS";
 
     private static final int SINGLE_ACCOUNT = 1;
@@ -144,19 +144,18 @@ public class ContactListFragment extends FileFragment implements Injectable {
 
 
     private ContactListAdapter contactListAdapter;
-    private Account account;
+    private User user;
     private List<VCard> vCards = new ArrayList<>();
     private OCFile ocFile;
     @Inject UserAccountManager accountManager;
     @Inject ClientFactory clientFactory;
 
-    public static ContactListFragment newInstance(OCFile file, Account account) {
+    public static ContactListFragment newInstance(OCFile file, User user) {
         ContactListFragment frag = new ContactListFragment();
         Bundle arguments = new Bundle();
         arguments.putParcelable(FILE_NAME, file);
-        arguments.putParcelable(ACCOUNT, account);
+        arguments.putParcelable(USER, user);
         frag.setArguments(arguments);
-
         return frag;
     }
 
@@ -210,11 +209,11 @@ public class ContactListFragment extends FileFragment implements Injectable {
 
         ocFile = getArguments().getParcelable(FILE_NAME);
         setFile(ocFile);
-        account = getArguments().getParcelable(ACCOUNT);
+        user = getArguments().getParcelable(USER);
 
         if (!ocFile.isDown()) {
             Intent i = new Intent(getContext(), FileDownloader.class);
-            i.putExtra(FileDownloader.EXTRA_ACCOUNT, account);
+            i.putExtra(FileDownloader.EXTRA_FILE_PATH, user);
             i.putExtra(FileDownloader.EXTRA_FILE, ocFile);
             getContext().startService(i);
 
@@ -515,8 +514,8 @@ public class ContactListFragment extends FileFragment implements Injectable {
             if (FileDownloader.getDownloadFinishMessage().equalsIgnoreCase(intent.getAction())) {
                 String downloadedRemotePath = intent.getStringExtra(FileDownloader.EXTRA_REMOTE_PATH);
 
-                FileDataStorageManager storageManager = new FileDataStorageManager(account,
-                        context.getContentResolver());
+                FileDataStorageManager storageManager = new FileDataStorageManager(user.toPlatformAccount(),
+                                                                                   context.getContentResolver());
                 ocFile = storageManager.getFileByPath(downloadedRemotePath);
                 loadContactsTask.execute();
             }
